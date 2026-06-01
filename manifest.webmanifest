@@ -1,0 +1,18 @@
+{
+  "name": "记忆地图",
+  "short_name": "记忆地图",
+  "description": "带账号和数据库的个人记忆地图",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbfcfb",
+  "theme_color": "#0f8b8d",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

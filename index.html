@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0f8b8d" />
+    <title>记忆地图</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./icon.svg" />
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="preconnect" href="https://basemaps.cartocdn.com" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link rel="stylesheet" href="./styles.css?v=layout-1" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="side-panel" aria-label="记忆列表">
+        <header class="brand-block">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span>
+          </div>
+          <div>
+            <h1>记忆地图</h1>
+            <p>把散落的日子钉回地图上</p>
+          </div>
+        </header>
+
+        <div class="account-row">
+          <span id="userNameLabel">未登录</span>
+          <button class="text-button" type="button" id="logoutButton">退出</button>
+        </div>
+
+        <label class="search-box" for="memorySearch">
+          <i data-lucide="search" aria-hidden="true"></i>
+          <input
+            id="memorySearch"
+            type="search"
+            autocomplete="off"
+            placeholder="搜索地点、人物、片段"
+          />
+        </label>
+
+        <div class="segment-control" role="tablist" aria-label="视图">
+          <button class="segment active" type="button" data-view="all" role="tab">
+            全部
+          </button>
+          <button class="segment" type="button" data-view="place" role="tab">
+            地点
+          </button>
+          <button class="segment" type="button" data-view="timeline" role="tab">
+            时间线
+          </button>
+        </div>
+
+        <section class="memory-stream" aria-label="记忆时间线">
+          <div class="stream-head">
+            <span id="memoryCount">0 条记忆</span>
+            <button class="text-button" type="button" id="resetDataButton">
+              重置样例
+            </button>
+          </div>
+          <div class="memory-list" id="memoryList"></div>
+        </section>
+      </aside>
+
+      <main class="map-stage" aria-label="地图">
+        <div class="map-toolbar" aria-label="地图工具">
+          <button class="icon-button primary" id="addMemoryButton" type="button" title="新增记忆" aria-label="新增记忆">
+            <i data-lucide="plus" aria-hidden="true"></i>
+          </button>
+          <button class="icon-button" id="filterButton" type="button" title="筛选" aria-label="筛选">
+            <i data-lucide="sliders-horizontal" aria-hidden="true"></i>
+          </button>
+          <button class="icon-button" id="exportButton" type="button" title="导出" aria-label="导出">
+            <i data-lucide="download" aria-hidden="true"></i>
+          </button>
+          <button class="icon-button" id="shareButton" type="button" title="分享" aria-label="分享">
+            <i data-lucide="share-2" aria-hidden="true"></i>
+          </button>
+          <button class="icon-button" id="installButton" type="button" title="安装到手机/桌面" aria-label="安装到手机或桌面">
+            <i data-lucide="smartphone" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div class="filter-popover" id="filterPopover" hidden>
+          <label>
+            <span>色彩</span>
+            <select id="colorFilter">
+              <option value="all">全部</option>
+              <option value="coral">珊瑚</option>
+              <option value="teal">海青</option>
+              <option value="sage">鼠尾草</option>
+              <option value="ink">墨蓝</option>
+            </select>
+          </label>
+          <label class="toggle-line">
+            <input type="checkbox" id="focusRecent" />
+            <span>只看近年</span>
+          </label>
+        </div>
+
+        <div id="memoryMap" class="memory-map"></div>
+
+        <div class="map-status" aria-live="polite">
+          <span class="status-dot"></span>
+          <span id="mapStatus">正在连接数据库</span>
+        </div>
+      </main>
+
+      <aside class="detail-panel" aria-label="选中记忆">
+        <div class="detail-date" id="detailDate"></div>
+        <h2 id="detailTitle"></h2>
+        <p class="detail-place" id="detailPlace"></p>
+        <div class="photo-strip" id="photoStrip" aria-label="照片"></div>
+        <p class="detail-story" id="detailStory"></p>
+        <div class="tag-row" id="detailTags"></div>
+        <div class="detail-actions">
+          <button class="solid-button" id="flyButton" type="button">
+            <i data-lucide="map-pin" aria-hidden="true"></i>
+            定位
+          </button>
+          <button class="ghost-button" id="editSelectedButton" type="button">
+            <i data-lucide="pen-line" aria-hidden="true"></i>
+            编辑
+          </button>
+          <button class="ghost-button danger" id="deleteSelectedButton" type="button">
+            <i data-lucide="trash-2" aria-hidden="true"></i>
+            删除
+          </button>
+        </div>
+      </aside>
+    </div>
+
+    <section class="auth-screen" id="authScreen" aria-label="账号登录">
+      <form class="auth-card" id="authForm">
+        <div class="brand-block auth-brand">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span>
+          </div>
+          <div>
+            <h1>记忆地图</h1>
+            <p>登录后，多个人可以在同一个服务里保存各自的记忆。</p>
+          </div>
+        </div>
+
+        <div class="auth-tabs" role="tablist" aria-label="账号操作">
+          <button class="segment active" type="button" id="loginModeButton">登录</button>
+          <button class="segment" type="button" id="registerModeButton">注册</button>
+        </div>
+
+        <label class="auth-field">
+          <span>账号</span>
+          <input id="usernameInput" autocomplete="username" required minlength="3" maxlength="32" placeholder="例如 amy" />
+        </label>
+        <label class="auth-field">
+          <span>密码</span>
+          <input id="passwordInput" type="password" autocomplete="current-password" required minlength="6" placeholder="至少 6 位" />
+        </label>
+
+        <button class="solid-button auth-submit" type="submit" id="authSubmitButton">
+          登录
+        </button>
+        <p class="auth-note" id="authNote">
+          需要通过本地服务器打开，账号和记忆会写入 SQLite 数据库。
+        </p>
+      </form>
+    </section>
+
+    <dialog class="memory-dialog" id="memoryDialog">
+      <form method="dialog" id="memoryForm">
+        <div class="dialog-head">
+          <h2 id="dialogTitle">新增记忆</h2>
+          <button class="icon-button" value="cancel" type="submit" aria-label="关闭" title="关闭">
+            <i data-lucide="x" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <input type="hidden" id="memoryId" />
+
+        <div class="form-grid">
+          <label>
+            <span>标题</span>
+            <input id="titleInput" required maxlength="32" placeholder="雨后的路灯" />
+          </label>
+          <label>
+            <span>日期</span>
+            <input id="dateInput" required placeholder="2024.05" />
+          </label>
+          <label>
+            <span>地点</span>
+            <input id="placeInput" required placeholder="上海 徐汇" />
+          </label>
+          <label>
+            <span>颜色</span>
+            <select id="colorInput">
+              <option value="coral">珊瑚</option>
+              <option value="teal">海青</option>
+              <option value="sage">鼠尾草</option>
+              <option value="ink">墨蓝</option>
+            </select>
+          </label>
+          <label>
+            <span>纬度</span>
+            <input id="latInput" required inputmode="decimal" />
+          </label>
+          <label>
+            <span>经度</span>
+            <input id="lngInput" required inputmode="decimal" />
+          </label>
+          <label class="wide">
+            <span>标签</span>
+            <input id="tagsInput" placeholder="海边, 独处, 夏天" />
+          </label>
+          <label class="wide">
+            <span>片段</span>
+            <textarea id="storyInput" required rows="4" maxlength="180" placeholder="写下一段能把你带回现场的话"></textarea>
+          </label>
+          <label class="wide upload-field">
+            <span>照片</span>
+            <input id="photoInput" type="file" accept="image/*" multiple />
+            <small>可以一次选择多张图片，建议每张 5MB 以内。</small>
+          </label>
+          <div class="wide form-photo-preview" id="formPhotoPreview"></div>
+        </div>
+
+        <div class="dialog-foot">
+          <button class="ghost-button" id="useCenterButton" type="button">
+            <i data-lucide="crosshair" aria-hidden="true"></i>
+            使用地图中心
+          </button>
+          <button class="solid-button" value="default" type="submit">
+            <i data-lucide="check" aria-hidden="true"></i>
+            保存
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <script src="./app.js?v=layout-1"></script>
+  </body>
+</html>

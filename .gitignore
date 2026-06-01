@@ -1,0 +1,8 @@
+data/
+__pycache__/
+*.pyc
+work/
+.vercel/
+PUBLIC_URL.txt
+permanent-tunnel.yml
+*.log
